@@ -1,7 +1,7 @@
 require File.expand_path(File.dirname(__FILE__) + '/edgecase')
 
 # Greed is a dice game where you roll up to five dice to accumulate
-# points.  The following "score" function will be used to calculate the
+# points.  The following "score" function will be used calculate the
 # score of a single roll of the dice.
 #
 # A greed roll is scored as follows:
@@ -30,7 +30,42 @@ require File.expand_path(File.dirname(__FILE__) + '/edgecase')
 # Your goal is to write the score method.
 
 def score(dice)
-  # You need to write this method
+  return 0 if dice.empty?
+  triplet = lambda {|n|
+    return 1000 if n == 1
+    return 100 * n
+  }
+  sum = 0
+  unit, remaining = find_triplet_unit_and_remaining_rolls dice
+  sum += triplet.call(unit)
+  sum += calculate_roll remaining
+  sum
+end
+
+def find_triplet_unit_and_remaining_rolls dice
+  unit = 0
+  histogram = [0,0,0,0,0,0]
+  dice.each { |roll|
+    histogram[roll - 1] += 1
+  }
+  histogram.each_with_index { |roll, i|
+    unit = i + 1 if histogram[i] >= 3
+  }
+  remaining_rolls = dice.select { |roll| roll != unit }
+  (histogram[unit-1]-3).times {
+    remaining_rolls << unit
+  }
+  [unit, remaining_rolls]
+end
+
+def calculate_roll dice
+  value = lambda { |n|
+    return 50 if n == 5
+    return 100 if n == 1
+    return 0
+  }
+  sum = dice.inject(0){ |sum, roll| sum + value[roll] }
+  sum
 end
 
 class AboutScoringProject < EdgeCase::Koan
